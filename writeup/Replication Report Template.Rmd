@@ -1,6 +1,6 @@
 ---
-title: "Replication of Study X by Sample & Sample (200x, Psychological Science)"
-author: "Replication Author[s] (contact information)"
+title: "Replication of Evidence of Serial Processing in Visual Word Recognition by White, Palmer and Boynton (2018, Psychological Science)"
+author: "Jamie Mitchell (jamiel12@stanford.edu)"
 date: "`r format(Sys.time(), '%B %d, %Y')`"
 output:
   html_document:
@@ -10,12 +10,20 @@ output:
       collapsed: false
 ---
 
-<!-- Replication reports should all use this template to standardize reporting across projects.  These reports will be public supplementary materials that accompany the summary report(s) of the aggregate results. -->
-
 ##Introduction
+###Justification for choice of experiment:
+This paper uses eye tracking data to help measure word processing ability. The research question and methodology of this paper are very relevant the the research I will be conducting as a PhD student. My research focuses on the neural processing of stimuli associated with reading (primarily withing the visual and auditory systems). Due to the in-person nature of the project and the present state of the world, I will not be able to collect my own data for this project. I will instead be using the raw data from the original paper, which is publicly available on Open Science Framework, to reproduce the results found in this paper.This will be useful in helping me become familiar with with eye tracking data along with developing a workflow for such data. I will also gain experience working through the challenges associated with reproduction of eye tracking data. 
 
-[No abstract is needed.]  Each replication project will have a straightforward, no frills report of the study and results.  These reports will be publicly available as supplementary material for the aggregate report(s) of the project as a whole.  Also, to maximize project integrity, the intro and methods will be written and critiqued in advance of data collection.  Introductions can be just 1-2 paragraphs clarifying the main idea of the original study, the target finding for replication, and any other essential information.  It will NOT have a literature review -- that is in the original publication. You can write both the introduction and the methods in past tense.  
+###Description of paper:
+This paper describes two experiments that were conducted in which researchers used eye tracking and rapid-serial-visual-presentation of stimuli to determine if the human visual parallel architecture allows for simultaneous processing of two words at once or if word recognition is constrained to serial processing. Participants were viewed pairs of words, displayed in rapid succession and were asked to identity the presence or absence of a target word from a pre-identified semantic category. Participants were directed to 
 
+###Anticipated challenges:
+I anticipate some challenges processing and analyzing the data as I have no prior experience working with eye-tracker data.
+
+###Links
+Project repository: https://github.com/psych251/white_2018
+Original paper: https://github.com/psych251/white_2018/tree/master/original_paper
+Open Science Framework: https://osf.io/ewr45
 
 ##Methods
 
