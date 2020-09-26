@@ -1,0 +1,10 @@
+name: Publish Document
+title:
+username:
+account: rpubs
+server: rpubs.com
+hostUrl: rpubs.com
+appId: https://api.rpubs.com/api/v1/document/666537/c4fbbe523d95461f93c75926fb09a561
+bundleId: https://api.rpubs.com/api/v1/document/666537/c4fbbe523d95461f93c75926fb09a561
+url: http://rpubs.com/jamitch/666537
+when: 1601148909.15358
