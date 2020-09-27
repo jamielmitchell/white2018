@@ -24,7 +24,7 @@ This paper describes two experiments that were conducted in which researchers us
 
 ### Anticipated challenges:
 
-I anticipate some challenges processing and analyzing the data as I have no prior experience working with eye-tracker data.
+I anticipate some challenges processing and analyzing the data as I have no prior experience working with eye-tracker data.I also do not have extensive prior knowledge of R so I anticipate some difficulty analyzing data as I am learning as I go.
 
 ### Links
 
