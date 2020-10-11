@@ -1,5 +1,5 @@
 ---
-title: "Replication of Evidence of Serial Processing in Visual Word Recognition by White, Palmer and Boynton (2018, Psychological Science)"
+title: "Reproduction of Evidence of Serial Processing in Visual Word Recognition by White, Palmer and Boynton (2018, Psychological Science)"
 author: "Jamie Mitchell (jamiel12@stanford.edu)"
 date: "`r format(Sys.time(), '%B %d, %Y')`"
 output:
