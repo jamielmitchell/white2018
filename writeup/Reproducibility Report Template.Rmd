@@ -43,12 +43,15 @@ Open Science Framework: https://osf.io/ewr45
 ### Description of the steps required to reproduce the results
 
 To reproduce the findings of the original paper, I will
-  1. Download the raw data supplememntal materials for Experiment 1 from Open Science       Framework
-  2. Convert the .txt files into .csv files (this differs from the orignal pipeline         because the authors used MatLab and I will be using R)
-  3. Combine individual participant data into 1 big spreadsheet
-  4. Clean the data by removing trials containing fixation breaks,entire blocks with        stimulus difficulty levels set too high, and other needed adjustments.
-  5. Compute dual-task accuracy (*Ag*) for each participant, for each side of fixation,       for each task
-  6. Plot dual-task accuracy of of responses correct on other side against responses        incorrect on other side.
+  1. Download the raw data supplemental materials for Experiment 1 from Open Science Framework
+  2. Combine individual participant data into 1 spreadsheet
+  3. Clean the data by filtering out trials containing fixation breaksand entire blocks with stimulus difficulty levels set too high.
+  4. Compute dual-task accuracy (*Ag*) for each participant, for each side of fixation, for each task
+  5. Plot dual-task accuracy of of responses correct on other side against responses incorrect on other side.
+  6. Calculate standard error of mean
+  7. Calculate t value
+  8. Calculate p value
+  9. Calculate confidence interval
   
 
 ### Differences from original study
@@ -63,36 +66,63 @@ The only distinct anticipated difference in this paper from the original study i
 Data preparation following the analysis plan.
 	
 ```{r include=F}
-## Load Relevant Libraries and Functions
+### Data Preparation
 
-## Import data
+#### Load Relevant Libraries and Functions
+library(tidyverse)
+library(RCurl)
 
-#### convert text files to csv (found below code online - need to adapt and test)
-#setwd("~/")
-#filelist = list.files(pattern = ".txt")
-#for (i in 1:length(filelist)){
-#    input<-filelist[i]
-#    output<-paste0(input, ".csv")
-#    print(paste("Processing the file:", input))
-#    data = read.delim(input, header = TRUE)   
-#    setwd("~/Desktop/test/done/")
-#    write.table(data, file=output, sep=",", col.names=TRUE, row.names=FALSE)
-#    setwd("~/")
-#}
+#### Import data
 
-#### combine individual subject data into a single master data file
+#temp <- tempfile()
+#download.file("https://github.com/psych251/white_2018/blob/master/white2018_data/#Expt1_IndivData%20(1).zip",temp)
+#data2 <- read.table(unz(temp, "a1.dat"))
+#unlink(temp)
+
+#data_link <- getURL("https://github.com/psych251/white_2018/blob/master/white2018#_data/Expt1_IndivData%20(1).zip")
+#data.csv <- read.csv(text = data_link)
+
+# testing methods to load data from github repo - using local directory for now
+mypath = "~/Documents/Stanford/Courses/PSYCH_251/white_2018/white2018_data/Expt1_IndivData"
+setwd(mypath)
+
+# combine individual subject data into a single master data file
+data_ls = list.files(path=mypath, pattern="*.txt") 
+txt_files_df <- lapply(data_ls, function(x) {read.delim(file = x, header = T, sep ="")})
+data <- do.call("rbind", lapply(txt_files_df, as.data.frame))
+
+#### Data exclusion / filtering
+data <- data %>%
+  filter(excludeBlock_BadDifficulty!=1,
+         fixBreak!=1,
+         nResps == 2)
+
+#### Prepare data for analysis - create columns etc.
+ROC_data <- subset(data, select=c(blockNum, trial, subjectNum, targSide, whichTask, reportedRating, month, day))
+
+ROC_data <- ROC_data %>%
+  mutate(realtrial= ((( ROC_data$blockNum - 1 )*16)+ROC_data$trial))
+  
 
 
-## Data exclusion / filtering
-####get rid of fixation breaks
-####trials for which excludeBlock_BadDifficulty equals 1 should be excluded from the analysis
-
-## Prepare data for analysis - create columns etc.
+#ROC_sem <-ROC_data %>%
+ # filter(whichTask == 1)
+  
+#ROC_colr <-ROC_data %>%
+ # filter(whichTask == 2)
 ```
 
 ### Key analysis
 
 The analyses as specified in the analysis plan.  
+```{r}
+ROC <- function(df){
+  for (participant in levels(factor(df$subjectNum))) {
+    
+  }
+}
+  
+```
 
 *Side-by-side graph with original graph is ideal here*
 
