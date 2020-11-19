@@ -16,18 +16,18 @@ output:
 
 ### Description of paper:
 
-This paper describes two experiments that were conducted in which researchers used eye tracking and rapid-serial-visual-presentation of stimuli to determine if the human visual parallel architecture allows for simultaneous processing of two words at once or if word recognition is constrained to serial processing. In Experiment #1 Participants were viewed pairs of words, displayed in rapid succession and were asked to identity the presence or absence of a target word from a pre-identified semantic category.
+This paper describes two experiments that were conducted in which researchers used eye tracking and rapid-serial-visual-presentation of stimuli to determine if the human visual parallel architecture allows for simultaneous processing of two words at once or if word recognition is constrained to serial processing. In Experiment 1, participants were asked to look at fixation cross in the center of the screen while pairs of words on either side of the cross flashed in rapid succession. At the end of each trial, participants were asked to identity if a target word from a pre-identified semantic category and/or if a target colored text was present on an indicated side of the fixation cross. The researchers then looked at the average accuracy for each participant and found that the data supported a serial processing model for the word recognition task but a parallel processing model for color recognition. 
 
 **Clarify key analysis of interest here**  
-The authors computed the area under the receiver-operating-characteristic (ROC) curve, known as Green’s area or *Ag* as a bias-free measure of accuracy.They then coded all dual-task responses by whether the response to the other side on the same trial was correct or incorrect and then computed *Ag* for both sets of trials.
+The authors computed the area under the receiver-operating-characteristic (ROC) curve, known as Green’s area or *Ag* as a bias-free measure of accuracy.They then coded all dual-task responses by whether the response to the other side on the same trial was correct or incorrect and then computed *Ag* for both sets of trials. Additionally, the authors reported mean accuracy, standard error of mean, t and p values, and confidence intervals for each task.
 
 ### Justification for choice of study
 
-This paper uses eye tracking data to help measure word processing ability. The research question and methodology of this paper are very relevant the the research I will be conducting as a PhD student. My research focuses on the neural processing of stimuli associated with reading (primarily withing the visual and auditory systems). Due to the in-person nature of the project and the present state of the world, I will not be able to collect my own data for this project. I will instead be using the raw data from the original paper, which is publicly available on Open Science Framework, to reproduce the results found in this paper.This will be useful in helping me become familiar with with eye tracking data along with developing a workflow for such data. I will also gain experience working through the challenges associated with reproduction of eye tracking data. This paper describes 2 experiements. I will be reproducing the results for Experiment #1.
+This paper uses eye tracking data to help measure word processing ability. The research question and methodology of this paper are very relevant the the research I will be conducting as a PhD student. My research focuses on the neural processing of stimuli associated with reading (primarily within the visual and auditory systems). Due to the in-person nature of the original project and the present state of the world, I will not be able to collect my own data for this project. I will instead be using the raw data from the original paper, which is publicly available on Open Science Framework, to reproduce the results found in this paper.This will be useful in helping me become familiar with with eye tracking data along with developing a workflow for processing such data. I will also gain experience working through the challenges associated with reproducing experimental results and statistical analysis. This paper describes 2 experiments. I will be reproducing the results for Experiment #1.
 
 ### Anticipated challenges
 
-I anticipate some challenges processing and analyzing the data as I have no prior experience working with eye-tracker data.I also do not have extensive prior knowledge of R so I anticipate some difficulty analyzing data as I am learning as I go.
+I anticipate some challenges processing and analyzing the data as I have no prior experience working with eye-tracker data. I also do not have extensive prior knowledge of R or statistics so I anticipate some difficulty analyzing data as I am learning as I go.
 
 ### Links
 
@@ -43,15 +43,18 @@ Open Science Framework: https://osf.io/ewr45
 ### Description of the steps required to reproduce the results
 
 To reproduce the findings of the original paper, I will
-  1. Download the raw data supplemental materials for Experiment 1 from Open Science Framework.
-  2. Combine individual participant data into 1 spreadsheet.
-  3. Clean the data by filtering out trials containing fixation breaksand entire blocks with stimulus difficulty levels set too high.
-  4. Compute dual-task accuracy (*Ag*) for each participant, for each side of fixation, for each task.
-  5. Plot dual-task accuracy of of responses correct on other side against responses incorrect on other side.
-  6. Calculate standard error of mean.
-  7. Calculate t value.
-  8. Calculate p value.
-  9. Calculate confidence interval.
+  1. Download the raw data and supplemental materials for Experiment 1 from Open Science Framework
+  2. Combine individual participant data into 1 data frame
+  3. Prepare the data for processing by filtering and excluding data and creating needed variables for analysis 
+  4. Compute dual-task accuracy (*Ag*) for each participant, for each side of fixation, for each task
+    1. Compute Hit rates and False Positive rates from reported ratings to compute points for the ROC curve
+    2. Calculate area under each ROC curve
+  5. Plot dual-task accuracy of of responses correct on other side against responses incorrect on other side
+  6. Calculate standard error of mean
+  7. Calculate mean accuracy
+  8. Calculate t value
+  9. Calculate p value
+  10. Calculate confidence interval
   
 
 ### Differences from original study
@@ -75,7 +78,7 @@ library(dplyr)
 library(ROCR)
 library(DescTools)
 library(ggplot2)
-#library(pROC)
+library(plotrix)
 
 #### Import data
 # set your path to the directory where your data is stored
@@ -170,369 +173,65 @@ ROC_points = function(dataset){
 }
 
 
-# apply ROC_points to each subject for both tasks and both other side correct statuses
-S1S1 <- ROC_data %>%
-  filter(subjectNum == 1,
+# Compute and compile Ag data
+df_plot = data.frame(X = double(), Y=double(), Task = character())
+
+for (n in seq(1,10)) {
+  
+  semX = AUC(ROC_points(filter(ROC_data, subjectNum == n,
          whichTask == "Semantic",
-         otherSideCorrect ==1)
-S1S0 <- ROC_data %>%
-  filter(subjectNum == 1,
+         otherSideCorrect == 0))[[2]],
+         ROC_points(filter(ROC_data, subjectNum == n,
          whichTask == "Semantic",
-         otherSideCorrect ==0)
-S1C1 <- ROC_data %>%
-  filter(subjectNum == 1,
-         whichTask == "Color",
-         otherSideCorrect ==1)
-S1C0 <- ROC_data %>%
-  filter(subjectNum == 1,
-         whichTask == "Color",
-         otherSideCorrect ==0)
-S1S1 <- ROC_points(S1S1)
-S1S0 <- ROC_points(S1S0)
-S1C1 <- ROC_points(S1C1)
-S1C0 <- ROC_points(S1C0)
-
-S2S1 <- ROC_data %>%
-  filter(subjectNum == 2,
+         otherSideCorrect == 0))[[1]])
+  
+  semY = AUC(ROC_points(filter(ROC_data, subjectNum == n,
          whichTask == "Semantic",
-         otherSideCorrect ==1)
-S2S0 <- ROC_data %>%
-  filter(subjectNum == 2,
+         otherSideCorrect == 1))[[2]],
+         ROC_points(filter(ROC_data, subjectNum == n,
          whichTask == "Semantic",
-         otherSideCorrect ==0)
-S2C1 <- ROC_data %>%
-  filter(subjectNum == 2,
+         otherSideCorrect == 1))[[1]])
+  
+  task = "Semantic"
+  
+  df_plot = rbind(df_plot, c(semX, semY, task))
+  
+  colrX = AUC(ROC_points(filter(ROC_data, subjectNum == n,
          whichTask == "Color",
-         otherSideCorrect ==1)
-S2C0 <- ROC_data %>%
-  filter(subjectNum == 2,
+         otherSideCorrect == 0))[[2]],
+         ROC_points(filter(ROC_data, subjectNum == n,
          whichTask == "Color",
-         otherSideCorrect ==0)
-S2S1 <- ROC_points(S2S1)
-S2S0 <- ROC_points(S2S0)
-S2C1 <- ROC_points(S2C1)
-S2C0 <- ROC_points(S2C0)
-
-S3S1 <- ROC_data %>%
-  filter(subjectNum == 3,
-         whichTask == "Semantic",
-         otherSideCorrect ==1)
-S3S0 <- ROC_data %>%
-  filter(subjectNum == 3,
-         whichTask == "Semantic",
-         otherSideCorrect ==0)
-S3C1 <- ROC_data %>%
-  filter(subjectNum == 3,
+         otherSideCorrect == 0))[[1]])
+  
+  colrY = AUC(ROC_points(filter(ROC_data, subjectNum == n,
          whichTask == "Color",
-         otherSideCorrect ==1)
-S3C0 <- ROC_data %>%
-  filter(subjectNum == 3,
+         otherSideCorrect == 1))[[2]],
+         ROC_points(filter(ROC_data, subjectNum == n,
          whichTask == "Color",
-         otherSideCorrect ==0)
-S3S1 <- ROC_points(S3S1)
-S3S0 <- ROC_points(S3S0)
-S3C1 <- ROC_points(S3C1)
-S3C0 <- ROC_points(S3C0)
+         otherSideCorrect == 1))[[1]])
+  
+  task = "Color"
+  
+  df_plot = rbind(df_plot, c(colrX, colrY, task))
+  
+}
 
-S4S1 <- ROC_data %>%
-  filter(subjectNum == 4,
-         whichTask == "Semantic",
-         otherSideCorrect ==1)
-S4S0 <- ROC_data %>%
-  filter(subjectNum == 4,
-         whichTask == "Semantic",
-         otherSideCorrect ==0)
-S4C1 <- ROC_data %>%
-  filter(subjectNum == 4,
-         whichTask == "Color",
-         otherSideCorrect ==1)
-S4C0 <- ROC_data %>%
-  filter(subjectNum == 4,
-         whichTask == "Color",
-         otherSideCorrect ==0)
-S4S1 <- ROC_points(S4S1)
-S4S0 <- ROC_points(S4S0)
-S4C1 <- ROC_points(S4C1)
-S4C0 <- ROC_points(S4C0)
-
-S5S1 <- ROC_data %>%
-  filter(subjectNum == 5,
-         whichTask == "Semantic",
-         otherSideCorrect ==1)
-S5S0 <- ROC_data %>%
-  filter(subjectNum == 5,
-         whichTask == "Semantic",
-         otherSideCorrect ==0)
-S5C1 <- ROC_data %>%
-  filter(subjectNum == 5,
-         whichTask == "Color",
-         otherSideCorrect ==1)
-S5C0 <- ROC_data %>%
-  filter(subjectNum == 5,
-         whichTask == "Color",
-         otherSideCorrect ==0)
-S5S1 <- ROC_points(S5S1)
-S5S0 <- ROC_points(S5S0)
-S5C1 <- ROC_points(S5C1)
-S5C0 <- ROC_points(S5C0)
-
-S6S1 <- ROC_data %>%
-  filter(subjectNum == 6,
-         whichTask == "Semantic",
-         otherSideCorrect ==1)
-S6S0 <- ROC_data %>%
-  filter(subjectNum == 6,
-         whichTask == "Semantic",
-         otherSideCorrect ==0)
-S6C1 <- ROC_data %>%
-  filter(subjectNum == 6,
-         whichTask == "Color",
-         otherSideCorrect ==1)
-S6C0 <- ROC_data %>%
-  filter(subjectNum == 6,
-         whichTask == "Color",
-         otherSideCorrect ==0)
-S6S1 <- ROC_points(S6S1)
-S6S0 <- ROC_points(S6S0)
-S6C1 <- ROC_points(S6C1)
-S6C0 <- ROC_points(S6C0)
-
-S7S1 <- ROC_data %>%
-  filter(subjectNum == 7,
-         whichTask == "Semantic",
-         otherSideCorrect ==1)
-S7S0 <- ROC_data %>%
-  filter(subjectNum == 7,
-         whichTask == "Semantic",
-         otherSideCorrect ==0)
-S7C1 <- ROC_data %>%
-  filter(subjectNum == 7,
-         whichTask == "Color",
-         otherSideCorrect ==1)
-S7C0 <- ROC_data %>%
-  filter(subjectNum == 7,
-         whichTask == "Color",
-         otherSideCorrect ==0)
-S7S1 <- ROC_points(S7S1)
-S7S0 <- ROC_points(S7S0)
-S7C1 <- ROC_points(S7C1)
-S7C0 <- ROC_points(S7C0)
-
-S8S1 <- ROC_data %>%
-  filter(subjectNum == 8,
-         whichTask == "Semantic",
-         otherSideCorrect ==1)
-S8S0 <- ROC_data %>%
-  filter(subjectNum == 8,
-         whichTask == "Semantic",
-         otherSideCorrect ==0)
-S8C1 <- ROC_data %>%
-  filter(subjectNum == 8,
-         whichTask == "Color",
-         otherSideCorrect ==1)
-S8C0 <- ROC_data %>%
-  filter(subjectNum == 8,
-         whichTask == "Color",
-         otherSideCorrect ==0)
-S8S1 <- ROC_points(S8S1)
-S8S0 <- ROC_points(S8S0)
-S8C1 <- ROC_points(S8C1)
-S8C0 <- ROC_points(S8C0)
-
-S9S1 <- ROC_data %>%
-  filter(subjectNum == 9,
-         whichTask == "Semantic",
-         otherSideCorrect ==1)
-S9S0 <- ROC_data %>%
-  filter(subjectNum == 9,
-         whichTask == "Semantic",
-         otherSideCorrect ==0)
-S9C1 <- ROC_data %>%
-  filter(subjectNum == 9,
-         whichTask == "Color",
-         otherSideCorrect ==1)
-S9C0 <- ROC_data %>%
-  filter(subjectNum == 9,
-         whichTask == "Color",
-         otherSideCorrect ==0)
-S9S1 <- ROC_points(S9S1)
-S9S0 <- ROC_points(S9S0)
-S9C1 <- ROC_points(S9C1)
-S9C0 <- ROC_points(S9C0)
-
-S10S1 <- ROC_data %>%
-  filter(subjectNum == 10,
-         whichTask == "Semantic",
-         otherSideCorrect ==1)
-S10S0 <- ROC_data %>%
-  filter(subjectNum == 10,
-         whichTask == "Semantic",
-         otherSideCorrect ==0)
-S10C1 <- ROC_data %>%
-  filter(subjectNum == 10,
-         whichTask == "Color",
-         otherSideCorrect ==1)
-S10C0 <- ROC_data %>%
-  filter(subjectNum == 10,
-         whichTask == "Color",
-         otherSideCorrect ==0)
-S10S1 <- ROC_points(S10S1)
-S10S0 <- ROC_points(S10S0)
-S10C1 <- ROC_points(S10C1)
-S10C0 <- ROC_points(S10C0)
-
-
-# calculate AUG (Ag) for each subject for semantic & color tasks for other side correct and other side incorrect
-S1Sy <- AUC(S1S1[[2]], S1S1[[1]], 
-    method = c("trapezoid"), 
-    absolutearea = FALSE, subdivisions = 100, na.rm = FALSE)
-S1Sx <- AUC(S1S0[[2]], S1S0[[1]], 
-    method = c("trapezoid"), 
-    absolutearea = FALSE, subdivisions = 100, na.rm = FALSE)
-S1Cy <- AUC(S1C1[[2]], S1C1[[1]], 
-    method = c("trapezoid"), 
-    absolutearea = FALSE, subdivisions = 100, na.rm = FALSE)
-S1Cx <- AUC(S1C0[[2]], S1C0[[1]], 
-    method = c("trapezoid"), 
-    absolutearea = FALSE, subdivisions = 100, na.rm = FALSE)
-
-S2Sy <- AUC(S2S1[[2]], S2S1[[1]], 
-    method = c("trapezoid"), 
-    absolutearea = FALSE, subdivisions = 100, na.rm = FALSE)
-S2Sx <- AUC(S2S0[[2]], S2S0[[1]], 
-    method = c("trapezoid"), 
-    absolutearea = FALSE, subdivisions = 100, na.rm = FALSE)
-S2Cy <- AUC(S2C1[[2]], S2C1[[1]], 
-    method = c("trapezoid"), 
-    absolutearea = FALSE, subdivisions = 100, na.rm = FALSE)
-S2Cx <- AUC(S2C0[[2]], S2C0[[1]], 
-    method = c("trapezoid"), 
-    absolutearea = FALSE, subdivisions = 100, na.rm = FALSE)
-
-S3Sy <- AUC(S3S1[[2]], S3S1[[1]], 
-    method = c("trapezoid"), 
-    absolutearea = FALSE, subdivisions = 100, na.rm = FALSE)
-S3Sx <- AUC(S3S0[[2]], S3S0[[1]], 
-    method = c("trapezoid"), 
-    absolutearea = FALSE, subdivisions = 100, na.rm = FALSE)
-S3Cy <- AUC(S3C1[[2]], S3C1[[1]], 
-    method = c("trapezoid"), 
-    absolutearea = FALSE, subdivisions = 100, na.rm = FALSE)
-S3Cx <- AUC(S3C0[[2]], S3C0[[1]], 
-    method = c("trapezoid"), 
-    absolutearea = FALSE, subdivisions = 100, na.rm = FALSE)
-
-S4Sy <- AUC(S4S1[[2]], S4S1[[1]], 
-    method = c("trapezoid"), 
-    absolutearea = FALSE, subdivisions = 100, na.rm = FALSE)
-S4Sx <- AUC(S4S0[[2]], S4S0[[1]], 
-    method = c("trapezoid"), 
-    absolutearea = FALSE, subdivisions = 100, na.rm = FALSE)
-S4Cy <- AUC(S4C1[[2]], S4C1[[1]], 
-    method = c("trapezoid"), 
-    absolutearea = FALSE, subdivisions = 100, na.rm = FALSE)
-S4Cx <- AUC(S4C0[[2]], S4C0[[1]], 
-    method = c("trapezoid"), 
-    absolutearea = FALSE, subdivisions = 100, na.rm = FALSE)
-
-S5Sy <- AUC(S5S1[[2]], S5S1[[1]], 
-    method = c("trapezoid"), 
-    absolutearea = FALSE, subdivisions = 100, na.rm = FALSE)
-S5Sx <- AUC(S5S0[[2]], S5S0[[1]], 
-    method = c("trapezoid"), 
-    absolutearea = FALSE, subdivisions = 100, na.rm = FALSE)
-S5Cy <- AUC(S5C1[[2]], S5C1[[1]], 
-    method = c("trapezoid"), 
-    absolutearea = FALSE, subdivisions = 100, na.rm = FALSE)
-S5Cx <- AUC(S5C0[[2]], S5C0[[1]], 
-    method = c("trapezoid"), 
-    absolutearea = FALSE, subdivisions = 100, na.rm = FALSE)
-
-S6Sy <- AUC(S6S1[[2]], S6S1[[1]], 
-    method = c("trapezoid"), 
-    absolutearea = FALSE, subdivisions = 100, na.rm = FALSE)
-S6Sx <- AUC(S6S0[[2]], S6S0[[1]], 
-    method = c("trapezoid"), 
-    absolutearea = FALSE, subdivisions = 100, na.rm = FALSE)
-S6Cy <- AUC(S6C1[[2]], S6C1[[1]], 
-    method = c("trapezoid"), 
-    absolutearea = FALSE, subdivisions = 100, na.rm = FALSE)
-S6Cx <- AUC(S6C0[[2]], S6C0[[1]], 
-    method = c("trapezoid"), 
-    absolutearea = FALSE, subdivisions = 100, na.rm = FALSE)
-
-S7Sy <- AUC(S7S1[[2]], S7S1[[1]], 
-    method = c("trapezoid"), 
-    absolutearea = FALSE, subdivisions = 100, na.rm = FALSE)
-S7Sx <- AUC(S7S0[[2]], S7S0[[1]], 
-    method = c("trapezoid"), 
-    absolutearea = FALSE, subdivisions = 100, na.rm = FALSE)
-S7Cy <- AUC(S7C1[[2]], S7C1[[1]], 
-    method = c("trapezoid"), 
-    absolutearea = FALSE, subdivisions = 100, na.rm = FALSE)
-S7Cx <- AUC(S7C0[[2]], S7C0[[1]], 
-    method = c("trapezoid"), 
-    absolutearea = FALSE, subdivisions = 100, na.rm = FALSE)
-
-S8Sy <- AUC(S8S1[[2]], S8S1[[1]], 
-    method = c("trapezoid"), 
-    absolutearea = FALSE, subdivisions = 100, na.rm = FALSE)
-S8Sx <- AUC(S8S0[[2]], S8S0[[1]], 
-    method = c("trapezoid"), 
-    absolutearea = FALSE, subdivisions = 100, na.rm = FALSE)
-S8Cy <- AUC(S8C1[[2]], S8C1[[1]], 
-    method = c("trapezoid"), 
-    absolutearea = FALSE, subdivisions = 100, na.rm = FALSE)
-S8Cx <- AUC(S8C0[[2]], S8C0[[1]], 
-    method = c("trapezoid"), 
-    absolutearea = FALSE, subdivisions = 100, na.rm = FALSE)
-
-S9Sy <- AUC(S9S1[[2]], S9S1[[1]], 
-    method = c("trapezoid"), 
-    absolutearea = FALSE, subdivisions = 100, na.rm = FALSE)
-S9Sx <- AUC(S9S0[[2]], S9S0[[1]], 
-    method = c("trapezoid"), 
-    absolutearea = FALSE, subdivisions = 100, na.rm = FALSE)
-S9Cy <- AUC(S9C1[[2]], S9C1[[1]], 
-    method = c("trapezoid"), 
-    absolutearea = FALSE, subdivisions = 100, na.rm = FALSE)
-S9Cx <- AUC(S9C0[[2]], S9C0[[1]], 
-    method = c("trapezoid"), 
-    absolutearea = FALSE, subdivisions = 100, na.rm = FALSE)
-
-S10Sy <- AUC(S10S1[[2]], S10S1[[1]], 
-    method = c("trapezoid"), 
-    absolutearea = FALSE, subdivisions = 100, na.rm = FALSE)
-S10Sx <- AUC(S10S0[[2]], S10S0[[1]], 
-    method = c("trapezoid"), 
-    absolutearea = FALSE, subdivisions = 100, na.rm = FALSE)
-S10Cy <- AUC(S10C1[[2]], S10C1[[1]], 
-    method = c("trapezoid"), 
-    absolutearea = FALSE, subdivisions = 100, na.rm = FALSE)
-S10Cx <- AUC(S10C0[[2]], S10C0[[1]], 
-    method = c("trapezoid"), 
-    absolutearea = FALSE, subdivisions = 100, na.rm = FALSE)
-
-
-# Create new data frame containing all A[g] values for plotting
-SemanticX = c(S1Sx, S2Sx, S3Sx, S4Sx, S5Sx, S6Sx, S7Sx, S8Sx, S9Sx, S10Sx)
-SemanticY = c(S1Sy, S2Sy, S3Sy, S4Sy, S5Sy, S6Sy, S7Sy, S8Sy, S9Sy, S10Sy)
-ColorX = c(S1Cx, S2Cx, S3Cx, S4Cx, S5Cx, S6Cx, S7Cx, S8Cx, S9Cx, S10Cx)
-ColorY = c(S1Cy, S2Cy, S3Cy, S4Cy, S5Cy, S6Cy, S7Cy, S8Cy, S9Cy, S10Cy)
-Task = c("Semantic", "Semantic", "Semantic", "Semantic", "Semantic", "Semantic", "Semantic", "Semantic", "Semantic", "Semantic", "Color", "Color", "Color", "Color", "Color", "Color", "Color", "Color", "Color", "Color")
-
-df = data.frame(c(SemanticX, ColorX), c(SemanticY,ColorY), Task)
-
+# Rename weird column names
+df_plot = rename(df_plot,
+  X = X.0.662072072072072.,
+  Y = X.0.639321493624772.,
+  Task = X.Semantic.
+  )
 
 # Plot the results
-ggplot(data = df,
-       mapping = aes(x = c.SemanticX..ColorX.,
-                     y = c.SemanticY..ColorY.,
+ggplot(data = df_plot,
+       mapping = aes(x = as.numeric(X),
+                     y = as.numeric(Y),
                      color = Task))+
   geom_point(size = 2.5) +
   expand_limits(x=c(0.5, 1.0), y=c(0.5, 1.0))+
   geom_abline(intercept = 0, slope = 1)+
-  labs(title ="Experiment 1 - Figure 3A Reproduction", x = expression(A[g] ~ " | Other Side Incorrect"), y =  expression(A[g] ~ "| Other Side Correct"))+
+  labs(title ="Experiment 1 - Figure 3A Reproduction", x = expression(italic(A[g]) ~ " | Other Side Incorrect"), y =  expression(italic(A[g]) ~ "| Other Side Correct"))+
   coord_fixed()+
   theme(panel.background = element_rect(fill = 'white'),
           panel.grid.major = element_line(colour = NULL),
@@ -545,20 +244,40 @@ ggplot(data = df,
 ```
 
 
-*Side-by-side graph with original graph is ideal here*
- ![Original Figure 3A](White2018_figure3.png)
-###Exploratory analyses
-Try to reproduce, standard error of mean, t vlaue, p vlaue, and confidence interval reported in the paper.
+The plot above is my seemingly successful reduction of Figure 3A from the paper. See below for the plot from the original paper for comparison.
+
+
+ ![](White2018_figure3.png)
+
+In addition to the above plot, the authors also found the following:
+"For semantic judgments in Experiment 1, accuracy was on average .06 Ag units (SEM = .02) lower when the other side’s response was correct than incorrect, t(9) = 3.31, p = .009, 95% CI = [.03, .11]" (page 1068).
+"For color judgments, the effect was exactly opposite: In Experiment 1, accuracy was on average .07 Ag units (SEM = .02) higher when the other side’s response was correct than incorrect, t(9) = 3.60, p = .006, 95% CI = [.03, .10]" (page 1068).
+See below for reproduced findings.
 ```{r}
+df_calc = df_plot %>%
+  mutate(Ag_diff = as.numeric(X)-as.numeric(Y))
+
+
+df_calcS = filter(df_calc, Task=="Semantic")
+
+std.error(df_calcS$Ag_diff)
+t.test(df_calcS$Ag_diff)
+
+
+df_calcC = filter(df_calc, Task=="Color")
+
+std.error(df_calcC$Ag_diff)
+t.test(df_calcC$Ag_diff)
 
 ```
 
 ## Discussion
 
 ### Summary of Reproduction Attempt
+The original authors found that mean accuracy on the color judgment task was higher when the other side's response was correct whereas the opposite were true for the semantic judgment task and mean accuracy was higher when the other side's response was incorrect. With these findings the authors concluded that a serial bottleneck does exist when processing semantic data but that other stimuli (such as colors) can be accurately processed and identified through parallel processing. While I did not have the exact points for the graph, I feel I was accurately able to reproduce Figure 3A. My reproduced findings appeared the same and thus supported the authors claim about serial processing of semantic information. 
 
-Open the discussion section with a paragraph summarizing the primary result from the key analysis and assess whether you successfully reproduced it, partially reproduced it, or failed to reproduce it.  
+I also calculated the mean accuracy for both tasks among all participants along with the Standard error of mean, the t score, p value, and the 95% confidence intervals reported in the paper. I saw slight variation in the the confidence intervals for both tasks along with slight variations in the t and p values for the color judgment task. That being said, these variations were small and had no effect on the significance of the finding. Values were so close that I assume the differences occurred due to rounding differences between my calculations and the original authors' calculations. 
+
 
 ### Commentary
-
-Add open-ended commentary (if any) reflecting (a) insights from follow-up exploratory analysis of the dataset, (b) assessment of the meaning of the successful or unsuccessful reproducibility attempt - e.g., for a failure to reproduce the original findings, are the differences between original and present analyses ones that definitely, plausibly, or are unlikely to have been moderators of the result, and (c) discussion of any objections or challenges raised by the current and original authors about the reproducibility attempt (if you contacted them).  None of these need to be long.
+Overall, I found the findings of this study to be very reproducible. The paper itself was missing information about how to run the analysis, however the authors provided information for the paper’s OSF listing where supplemental materials, all the raw, unedited data, and analysis code were open to the public. The supplemental materials explained the analysis plan in much more detail, the data was clean, and the authors provided a naming key so others could easily identify the variables in the data. The MatLab analysis code was also provided however, I was instructed not to look at this code during the duration of this project. I suspect if I had looked at this code (and been able to understand it) that I could have very likely reproduced the exact findings listed in the paper without the slight variations I found. Overall, the materials were all very well organized and the open science practices demonstrated by the original authors made the reproduction of the study findings possible. Additionally, due to the open science practices demonstrated by the original authors,  I had no need contact the authors for information in order to complete this project. That being said, the first author was aware that I was attempting a reproduction and had no objections.
